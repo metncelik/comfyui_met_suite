@@ -88,9 +88,6 @@ class BBOXResize:
     FUNCTION = "bbox_resize"
 
     def bbox_resize(self, bbox: tuple, width = 0, height = 0, keep_ratio = True):
-        if len(bbox) != 4:
-            raise ValueError("bbox must contain exactly four elements.")
-        
         x_min, y_min, x_max, y_max = bbox
         
         if keep_ratio:
@@ -100,21 +97,16 @@ class BBOXResize:
             ratio = bbox_width / bbox_height
             
             if width / height > ratio:
-                new_height = height
-                new_width = int(ratio * new_height)
+                # new_height = height
+                width = int(ratio * height)
             else:
-                new_width = width
-                new_height = int(new_width / ratio)
-
-            new_x_min = x_min
-            new_y_min = y_min
-            new_x_max = x_min + new_width
-            new_y_max = y_min + new_height
-        else:
-            new_x_min = x_min
-            new_y_min = y_min
-            new_x_max = x_min + width
-            new_y_max = y_min + height
+                # new_width = width
+                height = int(width / ratio)
+                
+        new_x_min = x_min - (width - (x_max - x_min))/2
+        new_y_min = y_min - (height - (y_max - y_min))/2
+        new_x_max = x_min + (width - (x_max - x_min))/2
+        new_y_max = y_min + (height - (y_max - y_min))/2
         
         new_bbox = (new_x_min, new_y_min, new_x_max, new_y_max)
         return (new_bbox,)
