@@ -18,19 +18,24 @@ class BBOXPadding:
     RETURN_TYPES = ("BBOX",)
     FUNCTION = "bbox_padding"
 
-    def bbox_padding(self ,bbox: tuple, padding = 0):
-        if len(bbox) != 4:
-            raise ValueError("bbox must contain exactly four elements.")
-        
-        # Assuming bbox is in the format (x_min, y_min, x_max, y_max)
+    def bbox_padding(self, bbox: tuple, padding=0, max_width=0, max_height=0):
         x_min, y_min, x_max, y_max = bbox
-        new_bbox = (
-            max(x_min - padding, 0),
-            max(y_min - padding, 0),
-            max(x_max + padding, 0),
-            max(y_max + padding, 0)
-        )
-        return (new_bbox, )
+
+        x_min_padded = max(x_min - padding, 0)
+        y_min_padded = max(y_min - padding, 0)
+        x_max_padded = x_max + padding
+        y_max_padded = y_max + padding
+
+        if max_width > 0:
+            x_max_padded = min(x_max_padded, max_width)
+            x_min_padded = min(x_min_padded, x_max_padded)
+
+        if max_height > 0:
+            y_max_padded = min(y_max_padded, max_height)
+            y_min_padded = min(y_min_padded, y_max_padded)
+
+        new_bbox = (x_min_padded, y_min_padded, x_max_padded, y_max_padded)
+        return new_bbox
         
         
 class ResizeKeepRatio:
