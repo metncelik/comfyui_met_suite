@@ -11,6 +11,8 @@ class BBOXPadding:
         return {"required": {
                     "bbox": ("BBOX", ),
                     "padding": ("INT", {"default": 0, "min": 0, "max": 255, "step": 1}),
+                    "max_width": ("INT", {"default": 0, "min": 0, "step": 1}),
+                    "max_height": ("INT", {"default": 0, "min": 0,  "step": 1}),
                     }}
 
     CATEGORY = DEFAULT_CATEGORY
