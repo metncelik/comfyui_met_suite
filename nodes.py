@@ -10,7 +10,7 @@ class BBOXPadding:
     def INPUT_TYPES(s):
         return {"required": {
                     "bbox": ("BBOX", ),
-                    "padding": ("INT", {"default": 0, "min": 0, "max": 255, "step": 1}),
+                    "padding": ("INT", {"default": 16, "min": 0, "max": 255, "step": 1}),
                     "max_width": ("INT", {"default": 0, "min": 0, "step": 1}),
                     "max_height": ("INT", {"default": 0, "min": 0,  "step": 1}),
                     }}
@@ -35,9 +35,9 @@ class BBOXPadding:
         if max_height > 0:
             y_max_padded = min(y_max_padded, max_height)
             y_min_padded = min(y_min_padded, y_max_padded)
-
-        new_bbox = (x_min_padded, y_min_padded, x_max_padded, y_max_padded)
-        return new_bbox
+        print(x_min_padded, y_min_padded, x_max_padded, y_max_padded)
+        new_bbox = (x_min_padded, y_min_padded, x_max_padded - x_min_padded, y_max_padded - y_min_padded)
+        return (new_bbox, )
         
         
 class ResizeKeepRatio:
