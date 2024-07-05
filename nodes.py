@@ -21,22 +21,21 @@ class BBOXPadding:
     FUNCTION = "bbox_padding"
 
     def bbox_padding(self, bbox: tuple, padding=0, max_width=0, max_height=0):
-        x_min, y_min, x_max, y_max = bbox
+        x_min, y_min, width, height = bbox
 
         x_min_padded = max(x_min - padding, 0)
         y_min_padded = max(y_min - padding, 0)
-        x_max_padded = x_max + padding
-        y_max_padded = y_max + padding
 
+        new_width = width + 2 * padding
+        new_height = height + 2 * padding
+        
         if max_width > 0:
-            x_max_padded = min(x_max_padded, max_width)
-            x_min_padded = min(x_min_padded, x_max_padded)
+            new_width = min(new_width, max_width)
 
         if max_height > 0:
-            y_max_padded = min(y_max_padded, max_height)
-            y_min_padded = min(y_min_padded, y_max_padded)
-        print(x_min_padded, y_min_padded, x_max_padded, y_max_padded)
-        new_bbox = (x_min_padded, y_min_padded, x_max_padded - x_min_padded, y_max_padded - y_min_padded)
+            new_height = min(new_height, max_height)
+            
+        new_bbox = (x_min_padded, y_min_padded, new_width, new_height)
         return (new_bbox, )
         
         
