@@ -1,0 +1,15 @@
+[project]
+name = "comfyui_met_suit"
+description = "Nodes:BBOXPadding, BBOXResize, ResizeKeepRatio."
+version = "1.0.0"
+license = "LICENSE"
+dependencies = ["pillow"]
+
+[project.urls]
+Repository = "https://github.com/metncelik/comfyui_met_suit"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "comfyui_met_suit"
+Icon = ""
