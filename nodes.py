@@ -30,10 +30,10 @@ class BBOXPadding:
         new_height = height + 2 * padding
         
         if max_width > 0:
-            new_width = min(new_width, max_width)
+            new_width = min(new_width, max_width - x_min_padded)
 
         if max_height > 0:
-            new_height = min(new_height, max_height)
+            new_height = min(new_height, max_height - y_min_padded)
             
         new_bbox = (x_min_padded, y_min_padded, new_width, new_height)
         return (new_bbox, )
