@@ -10,6 +10,6 @@ Repository = "https://github.com/metncelik/comfyui_met_suit"
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "metncelik"
 DisplayName = "comfyui_met_suit"
-Icon = ""
+Icon = "Ⓜ︎"
