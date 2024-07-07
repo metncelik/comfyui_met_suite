@@ -5,12 +5,31 @@ from .utils import tensor2pil, pil2tensor
 
 PARENT_CATEGORY = "MET SUITE"
 
+class PrimitiveBBOX:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {
+                    "x_min": ("INT", {"default": 0, "min": 0, "step": 1}),
+                    "y_min": ("INT", {"default": 0, "min": 0, "step": 1}),
+                    "width": ("INT", {"default": 512, "min": 1, "step": 1}),
+                    "height": ("INT", {"default": 512, "min": 1, "step": 1}),
+                    }}
+
+    CATEGORY = PARENT_CATEGORY + "/bbox"
+
+    RETURN_TYPES = ("BBOX", "INT", "INT", "INT", "INT", "INT", "INT")
+    RETURN_NAMES = ("bbox", "x_min", "y_min", "x_max", "y_max", "width", "height")
+    FUNCTION = "primitive_bbox"
+
+    def primitive_bbox(self, x_min=0, y_min=0, width=0, height=0):
+        return ((x_min, y_min, width, height), x_min, y_min, x_min + width, y_min + height,width, height)
+
 class BBOXPadding:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {
                     "bbox": ("BBOX", ),
-                    "padding": ("INT", {"default": 16, "min": 0, "max": 255, "step": 1}),
+                    "padding": ("INT", {"default": 16, "min": 0, "step": 1}),
                     "max_width": ("INT", {"default": 0, "min": 0, "step": 1}),
                     "max_height": ("INT", {"default": 0, "min": 0,  "step": 1}),
                     }}
@@ -38,8 +57,51 @@ class BBOXPadding:
             
         new_bbox = (x_min_padded, y_min_padded, new_width, new_height)
         return (new_bbox, )
+
+class BBOXResize:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": {
+                    "bbox": ("BBOX", ),
+                    "width": ("INT", {"default": 512, "min": 0, "step": 1}),
+                    "height": ("INT", {"default": 512, "min": 0, "step": 1}),
+                    "keep_ratio": ("BOOLEAN", {"default": True})
+                    }}
+
+    CATEGORY = PARENT_CATEGORY + "/bbox"
+
+    RETURN_TYPES = ("BBOX", "INT", "INT")
+    RETURN_NAMES = ("bbox", "new_width", "new_height")
+    FUNCTION = "bbox_resize"
+
+    def bbox_resize(self, bbox: tuple, width = 0, height = 0, keep_ratio = True):
+        x_min, y_min, original_width, original_height = bbox
         
-        
+        if keep_ratio:
+            if width == 0:
+                width = original_width
+
+            if height == 0:
+                height = original_height
+
+            ratio = original_width / original_height
+
+            if width / height > ratio:
+                new_height = height
+                new_width = int(ratio * new_height)
+            else:
+                new_width = width
+                new_height = int(new_width / ratio)
+                
+                
+            x_min = x_min * new_width / original_width
+            y_min = y_min * new_height / original_height
+        else:
+            new_width = width
+            new_height = height
+            
+        return ((x_min, y_min, new_width, new_height), new_width, new_height)
+    
 class ImageResizeKeepRatio:
     @classmethod
     def INPUT_TYPES(s):
@@ -55,7 +117,7 @@ class ImageResizeKeepRatio:
     RETURN_NAMES = ("resized_image", "new_width", "new_height" )
     FUNCTION = "resize_keep_ratio"
 
-    def resize_keep_ratio(self, image: torch.Tensor, width=512, height=768, fill_color=(0, 0, 0)):
+    def resize_keep_ratio(self, image: torch.Tensor, width=512, height=512):
         image = tensor2pil(image)[0]
         original_width, original_height = image.size
         ratio = original_width / original_height
@@ -71,47 +133,7 @@ class ImageResizeKeepRatio:
 
         resized_tensor = pil2tensor(resized_im)
 
-        return (resized_tensor, new_width, new_height)   
-
-class BBOXResize:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {"required": {
-                    "bbox": ("BBOX", ),
-                    "width": ("INT", {"default": 512, "min": 0, "max": 255, "step": 1}),
-                    "height": ("INT", {"default": 512, "min": 0, "max": 255, "step": 1}),
-                    "keep_ratio": ("BOOLEAN", {"default": True})
-                    }}
-
-    CATEGORY = PARENT_CATEGORY + "/bbox"
-
-    RETURN_TYPES = ("BBOX", "INT", "INT")
-    RETURN_NAMES = ("bbox", "new_width", "new_height")
-    FUNCTION = "bbox_resize"
-
-    def bbox_resize(self, bbox: tuple, width = 0, height = 0, keep_ratio = True):
-        x_min, y_min, x_max, y_max = bbox
-        
-        if keep_ratio:
-            bbox_width = x_max - x_min
-            bbox_height = y_max - y_min
-            
-            ratio = bbox_width / bbox_height
-            
-            if width / height > ratio:
-                # new_height = height
-                width = int(ratio * height)
-            else:
-                # new_width = width
-                height = int(width / ratio)
-                
-        new_x_min = x_min - (width - (x_max - x_min))/2
-        new_y_min = y_min - (height - (y_max - y_min))/2
-        new_x_max = x_min + (width - (x_max - x_min))/2
-        new_y_max = y_min + (height - (y_max - y_min))/2
-        
-        new_bbox = (new_x_min, new_y_min, new_x_max, new_y_max)
-        return (new_bbox,)
+        return (resized_tensor, new_width, new_height)           
        
 # class RaiseError:
 #     @classmethod
@@ -129,9 +151,9 @@ class BBOXResize:
 
 #     def raise_error(self, error_message:str):
 #         return (error_message,)
-
     
 NODE_CLASS_MAPPINGS = {
+    "PrimitiveBBOX": PrimitiveBBOX,
     "BBOXPadding": BBOXPadding,
     "BBOXResize": BBOXResize,
     "ImageResizeKeepRatio": ImageResizeKeepRatio,
@@ -139,6 +161,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "PrimitiveBBOX": "Primitive BBOX",
     "BBOXPadding": "BBOX Padding",
     "BBOXResize": "BBOX Resize",
     "ImageResizeKeepRatio": "Image Resize Keep Ratio",
