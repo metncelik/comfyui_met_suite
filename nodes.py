@@ -3,7 +3,7 @@ from torchvision import transforms
 from PIL import Image
 from .utils import tensor2pil, pil2tensor
 
-DEFAULT_CATEGORY = "MET SUITE"
+PARENT_CATEGORY = "MET SUITE"
 
 class BBOXPadding:
     @classmethod
@@ -15,9 +15,10 @@ class BBOXPadding:
                     "max_height": ("INT", {"default": 0, "min": 0,  "step": 1}),
                     }}
 
-    CATEGORY = DEFAULT_CATEGORY
+    CATEGORY = PARENT_CATEGORY + "/bbox"
 
     RETURN_TYPES = ("BBOX",)
+    RETURN_NAMES = ("bbox",)
     FUNCTION = "bbox_padding"
 
     def bbox_padding(self, bbox: tuple, padding=0, max_width=0, max_height=0):
@@ -39,7 +40,7 @@ class BBOXPadding:
         return (new_bbox, )
         
         
-class ResizeKeepRatio:
+class ImageResizeKeepRatio:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {
@@ -48,7 +49,7 @@ class ResizeKeepRatio:
                     "height": ("INT", {"default": 512, "min": 0,  "step": 1}),
                     }}
 
-    CATEGORY = DEFAULT_CATEGORY
+    CATEGORY = PARENT_CATEGORY + "/image"
 
     RETURN_TYPES = ("IMAGE", "INT", "INT",)
     RETURN_NAMES = ("resized_image", "new_width", "new_height" )
@@ -82,7 +83,7 @@ class BBOXResize:
                     "keep_ratio": ("BOOLEAN", {"default": True})
                     }}
 
-    CATEGORY = DEFAULT_CATEGORY
+    CATEGORY = PARENT_CATEGORY + "/bbox"
 
     RETURN_TYPES = ("BBOX", "INT", "INT")
     RETURN_NAMES = ("bbox", "new_width", "new_height")
@@ -112,16 +113,34 @@ class BBOXResize:
         new_bbox = (new_x_min, new_y_min, new_x_max, new_y_max)
         return (new_bbox,)
        
+# class RaiseError:
+#     @classmethod
+#     def INPUT_TYPES(s):
+#         return {"required": {
+#                     "error_message": ("STRING", {"default": "ComfyUI"}),
+#                     }}
+
+#     CATEGORY = PARENT_CATEGORY
+
+#     RETURN_TYPES = ("STRING", )
+#     FUNCTION = "raise_error"
+    
+#     OUTPUT_NODE = True
+
+#     def raise_error(self, error_message:str):
+#         return (error_message,)
 
     
 NODE_CLASS_MAPPINGS = {
     "BBOXPadding": BBOXPadding,
     "BBOXResize": BBOXResize,
-    "ResizeKeepRatio": ResizeKeepRatio
+    "ImageResizeKeepRatio": ImageResizeKeepRatio,
+    # "RaiseError": RaiseError
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "BBOXPadding": "BBOX Padding",
     "BBOXResize": "BBOX Resize",
-    "ResizeKeepRatio": "Resize Image Keep Ratio"
+    "ImageResizeKeepRatio": "Image Resize Keep Ratio",
+    # "RaiseError": "Raise Error"
 }
